@@ -44,9 +44,19 @@ exports.index = function(req, res, next) {
 exports.show = function(req, res, next) {
 
 	var answer = req.query.answer || '';
-
-	res.render('quizzes/show', {quiz: req.quiz,
-								answer: answer});
+	var format = req.params.format || "";
+	if(format===("json")){
+		res.json({quiz: req.quiz,
+				  answer: answer});
+	}
+	else if (format===("html")){
+		res.render('quizzes/show', {quiz: req.quiz,
+											answer: answer});
+	}
+	else {
+		res.render('quizzes/show', {quiz: req.quiz,
+											answer: answer});
+	}
 };
 
 

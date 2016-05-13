@@ -17,8 +17,8 @@ router.param('quizId', quizController.load);  // autoload :quizId
 
 
 // Definición de rutas de /quizzes
-router.get('/quizzes.:format?', quizController.index);
-router.get('/quizzes/:quizId(\\d+)',       quizController.show);
+router.get('/quizzes.:format?', 		   quizController.index);
+router.get('/quizzes/:quizId(\\d+).:format?',quizController.show);
 router.get('/quizzes/:quizId(\\d+)/check', quizController.check);
 router.get('/quizzes/new',                 quizController.new);
 router.post('/quizzes',                    quizController.create);
