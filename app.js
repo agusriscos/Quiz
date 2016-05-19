@@ -25,7 +25,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(session({secret: "Quiz 2016",
                  resave: false,
-                 saveUninitialized: true}));
+                 saveUninitialized: true
+                 }));
 app.use(methodOverride('_method', {methods: ["POST", "GET"] }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(partials());
@@ -41,6 +42,36 @@ app.use(function(req, res, next) {
    res.locals.session = req.session;
 
    next();
+});
+/*
+  app.use(function(req, res, next) {
+  var user = req.session.user;
+  var ti= new Date();
+  if(!user){
+    next();
+  }
+  else  if(ti.getTime() - user.tiempo>5000){
+    delete user;
+    next();
+  }
+  else{
+      user.tiempo= new Date().getTime();
+      next();
+  }
+});
+*/
+app.use(function(req, res, next) {
+  var user = req.session.user;
+  var ahora = new Date();
+  if(!user){
+    next();
+  }else if (ahora.getTime() - user.tiempo > 5000){
+    delete req.session.user;
+    next();
+  }else{
+    user.tiempo = new Date().getTime();
+    next();
+  }
 });
 
 app.use('/', routes);
