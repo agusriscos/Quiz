@@ -2,6 +2,7 @@ var models = require('../models');
 var Sequelize = require('sequelize');
 var url = require('url');
 
+
 // Middleware: Se requiere hacer login.
 //
 // Si el usuario ya hizo login anteriormente entonces existira 
@@ -12,7 +13,7 @@ var url = require('url');
 // Guardo en redir cual es mi url para volver automaticamente a 
 // esa url despues de hacer login; pero si redir ya existe entonces
 // conservo su valor.
-
+// 
 exports.loginRequired = function (req, res, next) {
     if (req.session.user) {
         next();
@@ -20,6 +21,51 @@ exports.loginRequired = function (req, res, next) {
         res.redirect('/session?redir=' + (req.param('redir') || req.url));
     }
 };
+
+// MW que permite gestionar solamente si el usuario logeado es admin.
+exports.adminRequired = function(req, res, next){
+
+    var isAdmin      = req.session.user.isAdmin;
+
+    if (isAdmin) {
+        next();
+    } else {
+      console.log('Ruta prohibida: el usuario logeado no es administrador.');
+      res.send(403);    }
+};
+
+// MW que permite gestionar un usuario solamente si el usuario logeado es:
+//   - admin 
+//   - o es el usuario a gestionar.
+exports.adminOrMyselfRequired = function(req, res, next){
+
+    var isAdmin      = req.session.user.isAdmin;
+    var userId       = req.user.id;
+    var loggedUserId = req.session.user.id;
+
+    if (isAdmin || userId === loggedUserId) {
+        next();
+    } else {
+      console.log('Ruta prohibida: no es el usuario logeado, ni un administrador.');
+      res.send(403);    }
+};
+
+// MW que permite gestionar un usuario solamente si el usuario logeado es:
+//   - admin
+//   - y no es el usuario a gestionar.
+exports.adminAndNotMyselfRequired = function(req, res, next){
+
+    var isAdmin      = req.session.user.isAdmin;
+    var userId       = req.user.id;
+    var loggedUserId = req.session.user.id;
+
+    if (isAdmin || userId === loggedUserId) {
+        next();
+    } else {
+      console.log('Ruta prohibida: no es el usuario logeado, ni un administrador.');
+      res.send(403);    }
+};
+
 
 
 /*
@@ -44,6 +90,11 @@ var authenticate = function(login, password) {
 
 
 // GET /session   -- Formulario de login
+//
+// Paso como parametro el valor de redir (es una url a la que 
+// redirigirme despues de hacer login) que me han puesto en la 
+// query (si no existe uso /).
+//
 exports.new = function(req, res, next) {
 
     var redir = req.query.redir || 
@@ -71,17 +122,17 @@ exports.create = function(req, res, next) {
             if (user) {
                 var t = new Date();
                 var t1 = t.getTime();
-    	        // Crear req.session.user y guardar campos id y username
-    	        // La sesión se define por la existencia de: req.session.user
-    	        req.session.user = {id:user.id, username:user.username, tiempo: t1};
+                // Crear req.session.user y guardar campos id y username
+                // La sesión se define por la existencia de: req.session.user
+                req.session.user = {id:user.id, username:user.username,isAdmin:user.isAdmin, tiempo: t1};
 
                 res.redirect(redir); // redirección a redir
             } else {
                 req.flash('error', 'La autenticación ha fallado. Reinténtelo otra vez.');
                 res.redirect("/session?redir="+redir);
             }
-		})
-		.catch(function(error) {
+        })
+        .catch(function(error) {
             req.flash('error', 'Se ha producido un error: ' + error);
             next(error);        
     });

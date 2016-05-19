@@ -60,6 +60,7 @@ app.use(function(req, res, next) {
   }
 });
 */
+//MW de autologout
 app.use(function(req, res, next) {
   var user = req.session.user;
   var ahora = new Date();
