@@ -48,6 +48,10 @@ Quiz.belongsTo(User, {as: 'Author', foreignKey: 'AuthorId'});
 Attachment.belongsTo(Quiz);
 Quiz.hasOne(Attachment);
 
+// Relacion 1 a N entre User y Comments:
+User.hasMany(Comment, {foreignKey: 'AuthorId'});
+Comment.belongsTo(User, {as: 'Author', foreignKey: 'AuthorId'});
+
 
 
 /* USARE Migraciones y Seeders
